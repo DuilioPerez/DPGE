@@ -20,9 +20,24 @@ OBJ_FILES = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC_FILES))
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -c $^ -o $@
 
+# Phony targets.
+.PHONY: all rm headers
+
 # Default target.
-$(OBJ_DIR)/DPGE.so: $(OBJ_FILES) $(OBJ_DIR)/DPGE
+all: $(OBJ_DIR)/libDPGE.so $(OBJ_DIR)/libDPGE.a headers
+
+# Shared library.
+$(OBJ_DIR)/libDPGE.so: $(OBJ_FILES)
 	$(CXX) -shared $(OBJ_FILES) -o $@ $(LDLIBS)
+
+# Static library.
+$(OBJ_DIR)/libDPGE.a: $(OBJ_FILES)
+	ar rcs $@ $(OBJ_FILES)
+
+# Make headers directory
+headers:
+	mkdir -p include/DPGE
+	cp $(SRC_DIR)/*.hpp include/DPGE/
 
 # Copy the headers in a directory.
 $(OBJ_DIR)/DPGE: $(wildcard $(SRC_DIR/*.hpp))

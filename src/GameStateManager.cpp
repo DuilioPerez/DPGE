@@ -56,10 +56,13 @@ void GameStateManager::handleEvents()
 {
   // Handle the events while they're happenning.
   while (SDL_PollEvent(&this->topEvent))
-    // If the game is running and there is at least one game
-    // state, it handle the events.
-    if (theGame.isRunning() && !this->gameStates.empty())
-      this->gameStates.top()->handleEvents(this->topEvent);
+    // If there is no game state, send a request to quit.
+    if (this->gameStates.empty())
+      theGame.exit();
+  // If the game is running and there is at least one game
+  // state, it handle the events.
+  if (theGame.isRunning() && !this->gameStates.empty())
+    this->gameStates.top()->handleEvents(this->topEvent);
 }
 
 // Update the current game state.
