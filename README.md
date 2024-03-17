@@ -2,7 +2,11 @@
 
 ---
 
-This is a game engine that has been written
-in C++ using the SDL2 library. It try to
-help to develop games and be easy to use
-and learn.
+This is a game engine that uses SDL2 to help in common game's operations,
+like game logic, rendering and audio handling. It's write in C++.
+
+## Dependencies
+
+---
+
+This game engine depends on SDL2, SDL2_image, SDL2_ttf and SDL2_mixer.
