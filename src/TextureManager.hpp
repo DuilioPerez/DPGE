@@ -24,6 +24,18 @@ namespace DPGE
     SOLID
   };
 
+  /// @brief An structure to hold the informagion of a
+  /// texture.
+  struct TextureInfo
+  {
+    /// @brief The name of the texture.
+    std::string name;
+    /// @brief The source area.
+    SDL_Rect *src;
+    /// @brief The destination area.
+    SDL_Rect *dest;
+  };
+
   /// @brief The texture manager of the game.
   class TextureManager final
   {

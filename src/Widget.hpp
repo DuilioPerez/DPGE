@@ -3,6 +3,7 @@
 /// @brief A generic Widget.
 #ifndef WIDGET_HPP
 #define WIDGET_HPP true
+#include <SDL2/SDL.h>
 
 namespace DPGE
 {
@@ -11,11 +12,7 @@ namespace DPGE
   class Widget
   {
   public:
-    /// @brief Handle the widget's events.
-    virtual void handleEvents() = 0;
-    /// @brief Update the widget.
-    virtual void update() = 0;
-    /// @brief Render the widget.
+    /// @brief Render a widget.
     virtual void render() = 0;
     /// @brief Virtual destructor.
     virtual ~Widget(){};
