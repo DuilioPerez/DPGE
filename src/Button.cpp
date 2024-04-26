@@ -24,6 +24,12 @@ void Button::setEventManager(
   this->eventManager = nextEventManager;
 }
 
+// Get the event manager.
+BasicEventListenerManager &Button::getEventManager()
+{
+  return this->eventManager;
+}
+
 // Set the layers of the widget.
 void Button::setLayers(
   const list<TextureInfo> &widgetLayers)
