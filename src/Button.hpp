@@ -16,9 +16,18 @@ namespace DPGE
   class Button final : public Widget
   {
   public:
+    /// @brief Constructor.
+    /// @param buttonArea The area of the button.
+    explicit Button(const SDL_Rect &buttonArea);
+    /// @brief Get the area of the button.
+    /// @return The area of tbe button.
+    const SDL_Rect &getArea() const;
     /// @brief Get the layers of the label.
     /// @return The layers of the label.
     const std::list<TextureInfo> &getLayers() const;
+    /// @brief Set the area of the button.
+    /// @param buttonArea the area of the button.
+    void setArea(const SDL_Rect &buttonArea);
     /// @brief Set the event manager of the button.
     /// @param eventManager The event manager to set.
     void setEventManager(
@@ -40,6 +49,8 @@ namespace DPGE
     std::list<TextureInfo> layers;
     /// @brief The event handler.
     BasicEventListenerManager eventManager;
+    /// @brief The area of the button.
+    SDL_Rect area;
   };
 
 } // namespace DPGE

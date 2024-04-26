@@ -5,6 +5,18 @@
 using namespace DPGE;
 using namespace std;
 
+// Constructor.
+Button::Button(const SDL_Rect &buttonArea)
+{
+  this->area = buttonArea;
+}
+
+// Set the area of the button.
+void Button::setArea(const SDL_Rect &buttonArea)
+{
+  this->area = buttonArea;
+}
+
 // Set the event manager.
 void Button::setEventManager(
   BasicEventListenerManager &nextEventManager)
@@ -19,6 +31,12 @@ void Button::setLayers(
   this->layers = widgetLayers;
 }
 
+// Get the area of the button.
+const SDL_Rect &Button::getArea() const
+{
+  return this->area;
+}
+
 // Get the layers of the current widget.
 const list<TextureInfo> &Button::getLayers() const
 {
@@ -29,8 +47,10 @@ const list<TextureInfo> &Button::getLayers() const
 void Button::render()
 {
   for (const TextureInfo &nextLayer : this->layers)
+  {
     theTextureManager.render(
       nextLayer.name, nextLayer.src, nextLayer.dest);
+  }
 }
 
 // Update the widget.
