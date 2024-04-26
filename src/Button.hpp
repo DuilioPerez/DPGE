@@ -16,12 +16,17 @@ namespace DPGE
   class Button final : public Widget
   {
   public:
+    /// @brief Default constructor.
+    Button() = default;
     /// @brief Constructor.
     /// @param buttonArea The area of the button.
     explicit Button(const SDL_Rect &buttonArea);
     /// @brief Get the area of the button.
     /// @return The area of tbe button.
     const SDL_Rect &getArea() const;
+    /// @brief Get the event manager.
+    /// @return The event manager.
+    BasicEventListenerManager &getEventManager();
     /// @brief Get the layers of the label.
     /// @return The layers of the label.
     const std::list<TextureInfo> &getLayers() const;
