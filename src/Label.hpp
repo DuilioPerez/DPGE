@@ -15,6 +15,15 @@ namespace DPGE
   class Label final : public Widget
   {
   public:
+    /// @brief Constructor
+    /// @param labelArea The area of the label.
+    explicit Label(const SDL_Rect &labelArea);
+    /// @brief Set the area of the label.
+    /// @param labelArea The area of the label.
+    void setArea(const SDL_Rect &labelArea);
+    /// @brief Get the area of the label.
+    /// @return The area of the label.
+    const SDL_Rect &getArea() const;
     /// @brief Get the layers of the label.
     /// @return The layers of the label.
     const std::list<TextureInfo> &getLayers() const;
@@ -30,6 +39,8 @@ namespace DPGE
   private:
     /// @brief The information of the textures of the label.
     std::list<TextureInfo> layers;
+    /// @brief The area of the label.
+    SDL_Rect area;
   };
 
 } // namespace DPGE
