@@ -15,6 +15,8 @@ namespace DPGE
   class Label final : public Widget
   {
   public:
+    /// @brief Default constructor.
+    Label() = default;
     /// @brief Constructor
     /// @param labelArea The area of the label.
     explicit Label(const SDL_Rect &labelArea);
