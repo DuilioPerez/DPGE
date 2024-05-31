@@ -50,96 +50,136 @@ const list<TextureInfo> &Button::getLayers() const
   return this->layers;
 }
 
-// Render the widget.
 void Button::render()
 {
-  // Window's dimensions.
-  int windowWidth, windowHeight;
-  // Default area for rendering.
-  SDL_Rect defaultSrc, defaultDest;
-  // Clipped source area to render.
-  SDL_Rect *clippedSrc = nullptr;
-  // Clipped destination area where texture will be
-  // rendered.
-  SDL_Rect *clippedDest = nullptr;
-  // Texture to query dimensions.
-  SDL_Texture *texture = nullptr;
-  // Difference between dimension one and dimension two.
-  Uint32 diff = 0;
-  // Get the window's size.
-  SDL_GetWindowSize(
-    theGame.getWindow(), &windowWidth, &windowHeight);
-  // Loop to render.
-  for (const TextureInfo &nextLayer : this->layers)
+  // Texture's size.
+  SDL_Rect textureSize = {0, 0, 0, 0};
+  // Game's window's size.
+  SDL_Rect windowSize = {0, 0, 0, 0};
+  // Clipped source area.
+  SDL_Rect clippedSrc = {0, 0, 0, 0};
+  // Clipped destination area.
+  SDL_Rect clippedDest = {0, 0, 0, 0};
+  // Horizontal and vertical scaling factors.
+  float xScale = 0;
+  float yScale = 0;
+  // Value to increase or decrease
+  int delta = 0;
+  // Render every texture of the button.
+  for (TextureInfo nextLayer : this->layers)
   {
-    // Texture dimensions.
-    clippedSrc  = nextLayer.src;
-    clippedDest = nextLayer.dest;
-    // If clippedSrc is nullptr, use the complete texture's
-    // size.
-    if (!clippedSrc)
+    // If the source is nullptr, query the texture's size.
+    if (!nextLayer.src)
     {
-      texture = theTextureManager.getModifiableTexture(
-        nextLayer.name);
-      SDL_QueryTexture(
-        texture, NULL, NULL, &defaultSrc.w, &defaultSrc.h);
-      defaultSrc.x = 0;
-      defaultSrc.y = 0;
-      clippedSrc   = &defaultSrc;
+      if (SDL_QueryTexture(
+            theTextureManager.getModifiableTexture(
+              nextLayer.name),
+            nullptr, nullptr, &textureSize.w,
+            &textureSize.h) < 0)
+      {
+        SDL_Log(
+          "Failed to query texture: %s\n", SDL_GetError());
+        continue; // Skip this layer if texture query fails.
+      }
+      nextLayer.src = &textureSize;
     }
-    // If clippedDest is nullptr, use window's complete
-    // dimensions.
-    if (!clippedDest)
+    // Same for destination rectangle.
+    if (!nextLayer.dest)
     {
-      defaultDest.x = 0;
-      defaultDest.y = 0;
-      defaultDest.w = windowWidth;
-      defaultDest.h = windowHeight;
-      clippedDest   = &defaultDest;
+      SDL_GetWindowSize(
+        theGame.getWindow(), &windowSize.w, &windowSize.h);
+      nextLayer.dest = &windowSize;
     }
-    // Clip destination area to fit button's area.
-    if (clippedDest->x < area.x)
+    // Don't render if width or height is non-positive.
+    if (nextLayer.src->w <= 0 || nextLayer.src->h <= 0 ||
+        nextLayer.dest->w <= 0 || nextLayer.dest->h <= 0)
     {
-      diff = this->area.x - clippedDest->x;
-      clippedSrc->x += diff;
-      clippedSrc->w -= diff;
-      clippedDest->x = area.x;
-      clippedDest->w -= diff;
+      continue;
     }
-    if (clippedDest->y < this->area.y)
+    // Clipping and scaling algorithm.
+    if (nextLayer.dest->x >= this->area.x &&
+        nextLayer.dest->y >= this->area.y &&
+        nextLayer.dest->x + nextLayer.dest->w <=
+          this->area.x + this->area.w &&
+        nextLayer.dest->y + nextLayer.dest->h <=
+          this->area.y + this->area.h)
     {
-      diff = this->area.y - clippedDest->y;
-      clippedSrc->y += diff;
-      clippedSrc->h -= diff;
-      clippedDest->y = this->area.y;
-      clippedDest->h -= diff;
-    }
-    if (clippedDest->x + clippedDest->w >
-        this->area.x + this->area.w)
-    {
-      diff = (clippedDest->x + clippedDest->w) -
-             (this->area.x + this->area.w);
-      clippedSrc->w -= diff;
-      clippedDest->w -= diff;
-    }
-    if (clippedDest->y + clippedDest->h >
-        this->area.y + this->area.h)
-    {
-      diff = (clippedDest->y + clippedDest->h) -
-             (this->area.y + this->area.h);
-      clippedSrc->h -= diff;
-      clippedDest->h -= diff;
-    }
-    // Be sure dimensions aren't negative.
-    if (clippedSrc->w > 0 && clippedSrc->h > 0 &&
-        clippedDest->w > 0 && clippedDest->h > 0)
-    {
+      // Destination is completely within the button area
       theTextureManager.render(
-        nextLayer.name, clippedSrc, clippedDest);
+        nextLayer.name, nextLayer.src, nextLayer.dest);
+    }
+    else if (nextLayer.dest->x + nextLayer.dest->w <
+               this->area.x ||
+             nextLayer.dest->y + nextLayer.dest->h <
+               this->area.y ||
+             nextLayer.dest->x >
+               this->area.x + this->area.w ||
+             nextLayer.dest->y >
+               this->area.y + this->area.h)
+    {
+      // Destination is completely outside the button area
+      continue;
+    }
+    else
+    {
+      // Calculate horizontal and vertical scaling factors.
+      xScale = static_cast<float>(nextLayer.src->w) /
+               nextLayer.dest->w;
+      yScale = static_cast<float>(nextLayer.src->h) /
+               nextLayer.dest->h;
+      // Set clipped source area to full source initially.
+      clippedSrc = *nextLayer.src;
+      // Set clipped destination area to full destination
+      // initially.
+      clippedDest = *nextLayer.dest;
+      // Adjust source and destination rectangles based on
+      // button boundaries.
+      if (nextLayer.dest->x < this->area.x)
+      {
+        delta = (this->area.x - nextLayer.dest->x) * xScale;
+        clippedSrc.x += delta;
+        clippedSrc.w -= delta;
+        clippedDest.x = this->area.x;
+        clippedDest.w -= this->area.x - nextLayer.dest->x;
+      }
+      if (nextLayer.dest->y < this->area.y)
+      {
+        delta = (this->area.y - nextLayer.dest->y) * yScale;
+        clippedSrc.y += delta;
+        clippedSrc.h -= delta;
+        clippedDest.y = this->area.y;
+        clippedDest.h -= this->area.y - nextLayer.dest->y;
+      }
+      if (nextLayer.dest->x + nextLayer.dest->w >
+          this->area.x + this->area.w)
+      {
+        delta = (nextLayer.dest->x + nextLayer.dest->w -
+                  (this->area.x + this->area.w)) *
+                xScale;
+        clippedSrc.w -= delta;
+        clippedDest.w =
+          this->area.x + this->area.w - nextLayer.dest->x;
+      }
+      if (nextLayer.dest->y + nextLayer.dest->h >
+          this->area.y + this->area.h)
+      {
+        delta = (nextLayer.dest->y + nextLayer.dest->h -
+                  (this->area.y + this->area.h)) *
+                yScale;
+        clippedSrc.h -= delta;
+        clippedDest.h =
+          this->area.y + this->area.h - nextLayer.dest->y;
+      }
+      // Render the clipped area if valid.
+      if (clippedSrc.w > 0 && clippedSrc.h > 0 &&
+          clippedDest.w > 0 && clippedDest.h > 0)
+      {
+        theTextureManager.render(
+          nextLayer.name, &clippedSrc, &clippedDest);
+      }
     }
   }
 }
-
 // Update the widget.
 void Button::update(void (*function)(list<TextureInfo> &))
 {
