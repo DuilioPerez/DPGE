@@ -24,7 +24,11 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 .PHONY: all rm headers
 
 # Default target.
-all: $(OBJ_DIR)/libDPGE.so $(OBJ_DIR)/libDPGE.a headers
+all: build $(OBJ_DIR)/libDPGE.so $(OBJ_DIR)/libDPGE.a headers
+
+# Build dir.
+build:
+	mkdir build
 
 # Shared library.
 $(OBJ_DIR)/libDPGE.so: $(OBJ_FILES)
@@ -47,9 +51,6 @@ $(OBJ_DIR)/DPGE: $(wildcard $(SRC_DIR/*.hpp))
 # Documentation.
 doc: Doxyfile
 	doxygen $^
-
-# Phony targets to remove object files.
-.PHONY: rm
 
 # Remove all the object files.
 rm:

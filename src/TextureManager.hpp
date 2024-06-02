@@ -24,7 +24,7 @@ namespace DPGE
     SOLID
   };
 
-  /// @brief An structure to hold the informagion of a
+  /// @brief An structure to hold the information of a
   /// texture.
   struct TextureInfo
   {
@@ -34,6 +34,18 @@ namespace DPGE
     SDL_Rect *src;
     /// @brief The destination area.
     SDL_Rect *dest;
+  };
+
+  /// @brief A structure to hold information of a texture
+  /// with single floating point rendering precision.
+  struct FTextureInfo
+  {
+    /// @brief The texture's name.
+    std::string name;
+    /// @brief Source area.
+    SDL_Rect *src;
+    /// @brief Destination area.
+    SDL_FRect *dest;
   };
 
   /// @brief The texture manager of the game.
@@ -101,6 +113,35 @@ namespace DPGE
     /// @param y The y coordinate.
     /// @return true in success, false otherwise.
     bool render(const std::string &name, int x, int y);
+    /// @brief Render a texture with single-floating
+    /// presicion.
+    /// @param name The id of the texture.
+    /// @param src The source area.
+    /// @param dest The destination area.
+    /// @param angle The rotation angle.
+    /// @param center The rotation center of the texture,
+    /// nullptr to set it at the center of the texture.
+    /// @param flip The flip direction.
+    /// @return true in success, false otherwise.
+    bool render(const std::string &name,
+      const SDL_Rect *src, const SDL_FRect *dest,
+      double angle = 0, const SDL_FPoint *center = nullptr,
+      const SDL_RendererFlip &flip = SDL_FLIP_NONE);
+    /// @brief render a texture using a source and
+    /// destination area with sngle foating precision.
+    /// @param name The name of the texture.
+    /// @param src The source rectangle.
+    /// @param dest The destination rectangle.
+    /// @return true in success, false otherwise.
+    bool render(const std::string &name,
+      const SDL_Rect &src, const SDL_FRect &dest);
+    /// @brief Render a texture using a destination
+    /// rectangle with single-floating presicion.
+    /// @param name The name of the texture.
+    /// @param dest The dest area.
+    /// @return true in success, false otherwise.
+    bool render(
+      const std::string &name, const SDL_FRect &dest);
     /// @brief Render a text.
     /// @param text The text to render.
     /// @param dest The destination coordinates.
@@ -112,6 +153,18 @@ namespace DPGE
     bool renderText(const std::string &text,
       const SDL_Point &dest, double angle = 0,
       const SDL_Point        *center = nullptr,
+      const SDL_RendererFlip &flip   = SDL_FLIP_NONE);
+    /// @brief Render a text with single floating presicion.
+    /// @param text The text to render.
+    /// @param dest The destination coordinates.
+    /// @param angle The rotation angle.
+    /// @param center The rotation center of the texture,
+    /// nullptr to set it at the center of the texture.
+    /// @param flip The flip direction.
+    /// @return true in success, false otherwise.
+    bool renderText(const std::string &text,
+      const SDL_FPoint &dest, double angle = 0,
+      const SDL_FPoint       *center = nullptr,
       const SDL_RendererFlip &flip   = SDL_FLIP_NONE);
     /// @brief Render a text.
     /// @param text The text to render.

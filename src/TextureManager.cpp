@@ -323,6 +323,110 @@ bool TextureManager::render(
   return true;
 }
 
+// Render a texture with floating precision.
+bool TextureManager::render(const string &name,
+  const SDL_Rect *src, const SDL_FRect *dest, double angle,
+  const SDL_FPoint *center, const SDL_RendererFlip &flip)
+{
+  // Render the texture.
+  if (this->textures.find(name) != this->textures.cend())
+  {
+    if (SDL_RenderCopyExF(theGame.getRenderer(),
+          this->textures[name], src, dest, angle, center,
+          flip) < 0)
+    {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+        "Error copying a texture in the game's renderer",
+        SDL_GetError(), theGame.getWindow());
+      SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+        "Error copying a texture in the game's renderer: "
+        "%s.\n",
+        SDL_GetError());
+      return false;
+    }
+  }
+  else
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+      "Can't render",
+      "The texture to render doesn't exists.",
+      theGame.getWindow());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+      "Can't render: The texture "
+      "to render doesn't exists.\n");
+    return false;
+  }
+  return true;
+}
+
+// Render a texture.
+bool TextureManager::render(const string &name,
+  const SDL_Rect &src, const SDL_FRect &dest)
+{
+  // Render the texture.
+  if (this->textures.find(name) != this->textures.cend())
+  {
+    if (SDL_RenderCopyF(theGame.getRenderer(),
+          this->textures[name], &src, &dest) < 0)
+    {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+        "Error copying a texture in the game's renderer",
+        SDL_GetError(), theGame.getWindow());
+      SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+        "Error copying a texture in the game's renderer: "
+        "%s.\n",
+        SDL_GetError());
+      return false;
+    }
+  }
+  else
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+      "Can't render",
+      "The texture to render doesn't exists.",
+      theGame.getWindow());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+      "Can't render: The texture "
+      "to render doesn't exists.\n");
+    return false;
+  }
+  return true;
+}
+
+// Render a texture.
+bool TextureManager::render(
+  const string &name, const SDL_FRect &dest)
+{
+  // Render the texture.
+  if (this->textures.find(name) != this->textures.cend())
+  {
+    if (SDL_RenderCopyF(theGame.getRenderer(),
+          this->textures[name], nullptr, &dest) < 0)
+    {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+        "Error copying a texture in the game's renderer",
+        SDL_GetError(), theGame.getWindow());
+      SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+        "Error copying a texture in the game's renderer: "
+        "%s.\n",
+        SDL_GetError());
+      return false;
+    }
+  }
+  else
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+      "Can't render",
+      "The texture to render doesn't exists.",
+      theGame.getWindow());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+      "Can't render: The texture "
+      "to render doesn't exist.\n");
+    return false;
+  }
+  return true;
+}
+
 // Render a text.
 bool TextureManager::renderText(const string &text,
   const SDL_Point &dest, double angle,
@@ -387,6 +491,90 @@ bool TextureManager::renderText(const string &text,
   // Show the texture.
   if (SDL_RenderCopyEx(theGame.getRenderer(), convertedText,
         nullptr, &destRect, angle, center, flip) < 0)
+  {
+    SDL_DestroyTexture(convertedText);
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+      "Error copying a texture", SDL_GetError(),
+      theGame.getWindow());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+      "Error copying a texture: %s.\n", SDL_GetError());
+    return false;
+  }
+  SDL_DestroyTexture(convertedText);
+  return true;
+}
+
+// Render a text with single floating precision.
+bool TextureManager::renderText(const string &text,
+  const SDL_FPoint &dest, double angle,
+  const SDL_FPoint *center, const SDL_RendererFlip &flip)
+{
+  // The loaded text.
+  SDL_Surface *loadedText = nullptr;
+  // The converted text.
+  SDL_Texture *convertedText = nullptr;
+  // Destination area.
+  SDL_FRect destRect = {dest.x, dest.y, 0, 0};
+  // Text's texture's width.
+  int textureWidth = 0;
+  // Text's texture's height.
+  int textureHeight = 0;
+  // Load the text.
+  switch (this->textRenderingQuality)
+  {
+  case TextQuality::BLENDED:
+    loadedText = TTF_RenderUTF8_Blended(
+      this->font, text.c_str(), this->getForegroundColor());
+    break;
+  case TextQuality::LCD:
+    loadedText = TTF_RenderUTF8_LCD(this->font,
+      text.c_str(), this->getForegroundColor(),
+      this->getBackgroundColor());
+    break;
+  case TextQuality::SHADED:
+    loadedText = TTF_RenderUTF8_Shaded(this->font,
+      text.c_str(), this->getForegroundColor(),
+      this->getBackgroundColor());
+    break;
+  case TextQuality::SOLID:
+    loadedText = TTF_RenderUTF8_Solid(
+      this->font, text.c_str(), this->getForegroundColor());
+    break;
+  }
+  // Verify if the text was loaded.
+  if (!loadedText)
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+      "Error rendering a text", TTF_GetError(),
+      theGame.getWindow());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+      "Error rendering a text: %s.\n", TTF_GetError());
+    return false;
+  }
+  // Convert the surface into texture.
+  convertedText = SDL_CreateTextureFromSurface(
+    theGame.getRenderer(), loadedText);
+  // Free the surface.
+  SDL_FreeSurface(loadedText);
+  // Verify if the texture was created.
+  if (!convertedText)
+  {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,
+      "Error creating a texture", SDL_GetError(),
+      theGame.getWindow());
+    SDL_LogError(SDL_LOG_CATEGORY_ERROR,
+      "Error creating a texture: %s.\n", SDL_GetError());
+    return false;
+  }
+  // Calculate the area.
+  SDL_QueryTexture(convertedText, nullptr, nullptr,
+    &textureWidth, &textureHeight);
+  destRect.w = textureWidth;
+  destRect.h = textureHeight;
+  // Show the texture.
+  if (SDL_RenderCopyExF(theGame.getRenderer(),
+        convertedText, nullptr, &destRect, angle, center,
+        flip) < 0)
   {
     SDL_DestroyTexture(convertedText);
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,

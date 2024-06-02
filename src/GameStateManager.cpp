@@ -70,7 +70,7 @@ void GameStateManager::handleEvents()
 // Update the current game state.
 void GameStateManager::update()
 {
-  // The same that handleEvents function.
+  // The same conditions that handleEvents function.
   if (theGame.isRunning() && !this->gameStates.empty())
     this->gameStates.top()->update();
 }
@@ -78,14 +78,27 @@ void GameStateManager::update()
 // Render the current game state.
 void GameStateManager::render()
 {
-  // The same that update function, but verify if the window
-  // is being shown
-  if (theGame.isRunning() && !this->gameStates.empty() &&
-      (SDL_GetWindowFlags(theGame.getWindow()) &
-        SDL_WINDOW_SHOWN))
-    this->gameStates.top()->render();
+  // Verify if the game is running, has game states, and
+  // it's window is shown.
+  if (theGame.isRunning() && !this->gameStates.empty())
+  {
+    Uint32 windowFlags =
+      SDL_GetWindowFlags(theGame.getWindow());
+    if (windowFlags & SDL_WINDOW_SHOWN &&
+        !(windowFlags & SDL_WINDOW_MINIMIZED))
+    {
+      this->gameStates.top()->render();
+    }
+    else
+    {
+      SDL_Log("No render!\n");
+    }
+  }
+  else
+  {
+    SDL_Log("No render!\n");
+  }
 }
-
 // Get the class instance.
 GameStateManager &GameStateManager::getInstace()
 {

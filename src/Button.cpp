@@ -93,9 +93,7 @@ void Button::render()
     // Don't render if width or height is non-positive.
     if (nextLayer.src->w <= 0 || nextLayer.src->h <= 0 ||
         nextLayer.dest->w <= 0 || nextLayer.dest->h <= 0)
-    {
       continue;
-    }
     // Clipping and scaling algorithm.
     if (nextLayer.dest->x >= this->area.x &&
         nextLayer.dest->y >= this->area.y &&
@@ -103,11 +101,9 @@ void Button::render()
           this->area.x + this->area.w &&
         nextLayer.dest->y + nextLayer.dest->h <=
           this->area.y + this->area.h)
-    {
       // Destination is completely within the button area
       theTextureManager.render(
         nextLayer.name, nextLayer.src, nextLayer.dest);
-    }
     else if (nextLayer.dest->x + nextLayer.dest->w <
                this->area.x ||
              nextLayer.dest->y + nextLayer.dest->h <
@@ -116,10 +112,8 @@ void Button::render()
                this->area.x + this->area.w ||
              nextLayer.dest->y >
                this->area.y + this->area.h)
-    {
       // Destination is completely outside the button area
       continue;
-    }
     else
     {
       // Calculate horizontal and vertical scaling factors.
@@ -138,52 +132,48 @@ void Button::render()
       {
         delta = (this->area.x - nextLayer.dest->x) * xScale;
         clippedSrc.x += delta;
-        clippedSrc.w -= delta;
         clippedDest.x = this->area.x;
-        clippedDest.w -= this->area.x - nextLayer.dest->x;
       }
       if (nextLayer.dest->y < this->area.y)
       {
         delta = (this->area.y - nextLayer.dest->y) * yScale;
         clippedSrc.y += delta;
-        clippedSrc.h -= delta;
         clippedDest.y = this->area.y;
-        clippedDest.h -= this->area.y - nextLayer.dest->y;
       }
-      if (nextLayer.dest->x + nextLayer.dest->w >
+      if (clippedDest.x + clippedDest.w >
           this->area.x + this->area.w)
       {
-        delta = (nextLayer.dest->x + nextLayer.dest->w -
+        delta = ((clippedDest.x + clippedDest.w) -
                   (this->area.x + this->area.w)) *
                 xScale;
         clippedSrc.w -= delta;
         clippedDest.w =
-          this->area.x + this->area.w - nextLayer.dest->x;
+          this->area.x + this->area.w - clippedDest.x;
       }
-      if (nextLayer.dest->y + nextLayer.dest->h >
+      if (clippedDest.y + clippedDest.h >
           this->area.y + this->area.h)
       {
-        delta = (nextLayer.dest->y + nextLayer.dest->h -
+        delta = ((clippedDest.y + clippedDest.h) -
                   (this->area.y + this->area.h)) *
                 yScale;
         clippedSrc.h -= delta;
         clippedDest.h =
-          this->area.y + this->area.h - nextLayer.dest->y;
+          this->area.y + this->area.h - clippedDest.y;
       }
       // Render the clipped area if valid.
       if (clippedSrc.w > 0 && clippedSrc.h > 0 &&
           clippedDest.w > 0 && clippedDest.h > 0)
-      {
         theTextureManager.render(
-          nextLayer.name, &clippedSrc, &clippedDest);
-      }
+          nextLayer.name, clippedSrc, clippedDest);
     }
   }
 }
+
 // Update the widget.
 void Button::update(void (*function)(list<TextureInfo> &))
 {
-  function(this->layers);
+  if (function)
+    function(this->layers);
 }
 
 // Handle the events
