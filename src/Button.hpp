@@ -26,7 +26,7 @@ namespace DPGE
     const SDL_Rect &getArea() const;
     /// @brief Get the event manager.
     /// @return The event manager.
-    BasicEventListenerManager &getEventManager();
+    BasicEventListener &getEventListener();
     /// @brief Get the layers of the label.
     /// @return The layers of the label.
     const std::list<TextureInfo> &getLayers() const;
@@ -35,8 +35,7 @@ namespace DPGE
     void setArea(const SDL_Rect &buttonArea);
     /// @brief Set the event manager of the button.
     /// @param eventManager The event manager to set.
-    void setEventManager(
-      BasicEventListenerManager &eventManager);
+    void setEventListener(BasicEventListener &eventManager);
     /// @brief Set the layers of the label.
     /// @param layers The layers of the label.
     void setLayers(const std::list<TextureInfo> &layers);
@@ -53,7 +52,7 @@ namespace DPGE
     /// @brief The information of the textures of the label.
     std::list<TextureInfo> layers;
     /// @brief The event handler.
-    BasicEventListenerManager eventManager;
+    BasicEventListener eventManager;
     /// @brief The area of the button.
     SDL_Rect area;
   };

@@ -21,7 +21,7 @@ namespace DPGE
   class Game final
   {
   public:
-    /// @brief Copy constructor deleted.
+    /// @brief Deleted copy constructor.
     Game(const Game &) = delete;
     /// @brief Initialize the game.
     void initialize();

@@ -6,32 +6,36 @@
 using namespace DPGE;
 using namespace std;
 
+// The EventHandler object.
+EventHandler &DPGE::theEventHandler =
+  EventHandler::getInstance();
+
 // Add an event handler.
-void BasicEventListenerManager::addEventListener(
+void BasicEventListener::addEventListener(
   const EventType &event,
   void (*function)(const SDL_Event &))
 {
   // If the function isn't nullptr, add the event
   // listener.
   if (function)
-    this->eventListenerManagers[event] = function;
+    this->eventListeners[event] = function;
   // Otherwise delete the current event listener.
   else
-    this->eventListenerManagers.erase(event);
+    this->eventListeners.erase(event);
 }
 
 // Remove an event listener.
-void BasicEventListenerManager::removeEventListener(
+void BasicEventListener::removeEventListener(
   const EventType &event)
 {
   // If there is an event listener, remove it.
-  if (this->eventListenerManagers.find(event) !=
-      this->eventListenerManagers.cend())
-    this->eventListenerManagers.erase(event);
+  if (this->eventListeners.find(event) !=
+      this->eventListeners.cend())
+    this->eventListeners.erase(event);
 }
 
 // Handle the events.
-void BasicEventListenerManager::handleEvents(
+void BasicEventListener::handleEvents(
   const SDL_Event &event)
 {
   switch (event.type)
@@ -125,13 +129,13 @@ void BasicEventListenerManager::handleEvents(
 }
 
 // Call a function based on the event.
-void BasicEventListenerManager::callFunction(
+void BasicEventListener::callFunction(
   const EventType &event, const SDL_Event &topEvent)
 {
   // Call the function if is defined.
-  if (this->eventListenerManagers.find(event) !=
-      this->eventListenerManagers.cend())
-    this->eventListenerManagers[event](topEvent);
+  if (this->eventListeners.find(event) !=
+      this->eventListeners.cend())
+    this->eventListeners[event](topEvent);
 }
 
 // Add an event listener manager to the event handler.
@@ -139,90 +143,93 @@ void EventHandler::addEventListenerManager(
   const string &id, void *data)
 {
   // Insert it if there is not one with that id.
-  if (this->eventListenerManagers.find(id) !=
-      this->eventListenerManagers.cend())
-    this->eventListenerManagers[id].setData(&data);
+  if (this->eventListeners.find(id) !=
+      this->eventListeners.cend())
+    this->eventListeners[id].setData(&data);
 }
 
 // Add a basic event listener manager to the event handler.
-void EventHandler::addBasicEventListenerManager(
-  const string &id)
+void EventHandler::addBasicEventListener(const string &id)
 {
   // Insert it if there is not one with that id.
-  if (this->eventListenerManagers.find(id) !=
-      this->eventListenerManagers.cend())
-    this->basicEventListenerManagers[id] =
-      BasicEventListenerManager();
+  if (this->eventListeners.find(id) !=
+      this->eventListeners.cend())
+    this->basicEventListeners[id] = BasicEventListener();
 }
 
 // Make the event listener managers to handle the events.
 void EventHandler::handleEvents(const SDL_Event &topEvent)
 {
   // Normal event listener managers.
-  for (auto &item : this->eventListenerManagers)
+  for (auto &item : this->eventListeners)
     item.second.handleEvents(topEvent);
   // Basic event listener managers.
-  for (auto &item : this->basicEventListenerManagers)
+  for (auto &item : this->basicEventListeners)
     item.second.handleEvents(topEvent);
 }
 
 // Get an event listener manager.
-EventListenerManager<void *> *EventHandler::
-  getEventListenerManager(const string &id)
+EventListener<void *> *EventHandler::getEventListener(
+  const string &id)
 {
   // Return the event handler if is found.
-  if (this->eventListenerManagers.find(id) !=
-      this->eventListenerManagers.cend())
-    return &this->eventListenerManagers[id];
+  if (this->eventListeners.find(id) !=
+      this->eventListeners.cend())
+    return &this->eventListeners[id];
   return nullptr;
 }
 
 // Get a basic event listener manager.
-BasicEventListenerManager *EventHandler::
-  getBasicEventListenerManager(const string &id)
+BasicEventListener *EventHandler::getBasicEventListener(
+  const string &id)
 {
   // Return the event handler if is found.
-  if (this->basicEventListenerManagers.find(id) !=
-      this->basicEventListenerManagers.cend())
-    return &this->basicEventListenerManagers[id];
+  if (this->basicEventListeners.find(id) !=
+      this->basicEventListeners.cend())
+    return &this->basicEventListeners[id];
   return nullptr;
 }
 
 // Erase an event listener manager.
-void EventHandler::eraseEventListenerManager(
-  const string &id)
+void EventHandler::eraseEventListener(const string &id)
 {
   // Erase it if is found.
-  if (this->eventListenerManagers.find(id) !=
-      this->eventListenerManagers.cend())
-    this->eventListenerManagers.erase(id);
+  if (this->eventListeners.find(id) !=
+      this->eventListeners.cend())
+    this->eventListeners.erase(id);
 }
 
 // Erase a basic event listener manager.
-void EventHandler::eraseBasicEventListenerManager(
-  const string &id)
+void EventHandler::eraseBasicEventListener(const string &id)
 {
   // Erase it if is found.
-  if (this->basicEventListenerManagers.find(id) !=
-      this->basicEventListenerManagers.cend())
-    this->basicEventListenerManagers.erase(id);
+  if (this->basicEventListeners.find(id) !=
+      this->basicEventListeners.cend())
+    this->basicEventListeners.erase(id);
 }
 
 // Delete all the normal event listener manager.
-void EventHandler::clearEventListenerManagers()
+void EventHandler::clearEventListeners()
 {
-  this->eventListenerManagers.clear();
+  this->eventListeners.clear();
 }
 
 // Delete all the basic event listener manager.
-void EventHandler::clearBasicEventListenerManagers()
+void EventHandler::clearBasicEventListeners()
 {
-  this->basicEventListenerManagers.clear();
+  this->basicEventListeners.clear();
 }
 
 // Delete all the event listener manager, normal and basic.
 void EventHandler::clear()
 {
-  this->eventListenerManagers.clear();
-  this->basicEventListenerManagers.clear();
+  this->eventListeners.clear();
+  this->basicEventListeners.clear();
+}
+
+// Get the class' instance.
+EventHandler &EventHandler::getInstance()
+{
+  static EventHandler theEventHandler;
+  return theEventHandler;
 }

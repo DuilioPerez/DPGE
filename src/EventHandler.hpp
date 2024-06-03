@@ -63,15 +63,14 @@ namespace DPGE
 
   /// @brief A class to handle events of a game object.
   template <typename T>
-  class EventListenerManager final
+  class EventListener final
   {
   public:
     /// @brief Default constructor.
-    EventListenerManager() = default;
+    EventListener() = default;
     /// @brief Create an event handler using a data struct.
     /// @param dataStruct The data to use.
-    EventListenerManager(T *dataStruct)
-    : data{dataStruct} {};
+    EventListener(T *dataStruct) : data{dataStruct} {};
     /// @brief Add an event listener.
     /// @param event The event to listen.
     /// @param function The function to register.
@@ -81,19 +80,19 @@ namespace DPGE
       // If the function isn't nullptr, add the event
       // listener.
       if (function)
-        this->eventListenerManagers[event] = function;
+        this->eventListeners[event] = function;
       // Otherwise delete the current event listener.
       else
-        this->eventListenerManagers.erase(event);
+        this->eventListeners.erase(event);
     }
     /// @brief Remove the event listener.
     /// @param event The event to remove its listener.
     void removeEventListener(const EventType &event)
     {
       // If there is an event listener, remove it.
-      if (this->eventListenerManagers.find(event) !=
-          this->eventListenerManagers.cend())
-        this->eventListenerManagers.erase(event);
+      if (this->eventListeners.find(event) !=
+          this->eventListeners.cend())
+        this->eventListeners.erase(event);
     }
     /// @brief Handle the events.
     /// @param event The even to handle.
@@ -205,21 +204,20 @@ namespace DPGE
       const EventType &event, const SDL_Event &topEvent)
     {
       // Call the function if is defined.
-      if (this->eventListenerManagers.find(event) !=
-          this->eventListenerManagers.cend())
-        this->eventListenerManagers[event](
-          this->data, topEvent);
+      if (this->eventListeners.find(event) !=
+          this->eventListeners.cend())
+        this->eventListeners[event](this->data, topEvent);
     }
     /// @brief Data for the event handler.
     T *data;
     /// @brief All the event listeners.
     std::map<EventType, void (*)(T *, const SDL_Event &)>
-      eventListenerManagers;
+      eventListeners;
   };
 
   /// @brief A class to handle events of a game object
   /// without a data structure.
-  class BasicEventListenerManager final
+  class BasicEventListener final
   {
   public:
     /// @brief Add an event listener.
@@ -241,13 +239,15 @@ namespace DPGE
       const EventType &event, const SDL_Event &topEvent);
     /// @brief All the event listeners.
     std::map<EventType, void (*)(const SDL_Event &)>
-      eventListenerManagers;
+      eventListeners;
   };
 
   /// @brief An event handler.
   class EventHandler final
   {
   public:
+    /// @brief Deleted copy constructor.
+    EventHandler(const EventHandler &) = delete;
     /// @brief Add an event listener id to its map.
     /// @param id The id of the event listener manager.
     /// @param data The data struct to manipulate.
@@ -255,8 +255,7 @@ namespace DPGE
       const std::string &id, void *data);
     /// @brief Add a basic event listener.
     /// @param id The id of the event listener manager.
-    void addBasicEventListenerManager(
-      const std::string &id);
+    void addBasicEventListener(const std::string &id);
     /// @brief Handle the events.
     /// @param topEvent The event in the top of the stack.
     void handleEvents(const SDL_Event &topEvent);
@@ -264,39 +263,48 @@ namespace DPGE
     /// @param id The id of the event listener.
     /// @return The event listener manager, or nullptr in
     /// error.
-    EventListenerManager<void *> *getEventListenerManager(
+    EventListener<void *> *getEventListener(
       const std::string &id);
     /// @brief Get a pointer to a basic event listener
     /// manager.
     /// @param id The id of the event listener.
     /// @return The event listener manager, or nullptr in
     /// error.
-    BasicEventListenerManager *getBasicEventListenerManager(
+    BasicEventListener *getBasicEventListener(
       const std::string &id);
     /// @brief Erase an event listener manager.
     /// @param id The id of the event listener manager.
-    void eraseEventListenerManager(const std::string &id);
+    void eraseEventListener(const std::string &id);
     /// @brief Erase a basic event listener manager.
     /// @param id The event listener manager's id.
-    void eraseBasicEventListenerManager(
-      const std::string &id);
+    void eraseBasicEventListener(const std::string &id);
     /// @brief Remove all the normal event listener
     /// managers.
-    void clearEventListenerManagers();
+    void clearEventListeners();
     /// @brief Remove all the basic event listener managers.
-    void clearBasicEventListenerManagers();
+    void clearBasicEventListeners();
     /// @brief Clear all the event listener manager, both
     /// normal and basic.
     void clear();
+    /// @brief Get the class' instance.
+    static EventHandler &getInstance();
+    /// @brief Deleted copy operator.
+    const EventHandler &operator=(
+      const EventHandler) = delete;
 
   private:
+    /// @brief Default constructor.
+    EventHandler() = default;
     /// @brief Normal event listeners.
-    std::map<std::string, EventListenerManager<void *>>
-      eventListenerManagers;
+    std::map<std::string, EventListener<void *>>
+      eventListeners;
     /// @brief Basic event listeners.
-    std::map<std::string, BasicEventListenerManager>
-      basicEventListenerManagers;
+    std::map<std::string, BasicEventListener>
+      basicEventListeners;
   };
+
+  /// @brief A reference to the EventHandler object.
+  extern EventHandler &theEventHandler;
 
 } // namespace DPGE
 

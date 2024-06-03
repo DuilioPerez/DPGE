@@ -19,14 +19,14 @@ void Button::setArea(const SDL_Rect &buttonArea)
 }
 
 // Set the event manager.
-void Button::setEventManager(
-  BasicEventListenerManager &nextEventManager)
+void Button::setEventListener(
+  BasicEventListener &nextEventManager)
 {
   this->eventManager = nextEventManager;
 }
 
 // Get the event manager.
-BasicEventListenerManager &Button::getEventManager()
+BasicEventListener &Button::getEventListener()
 {
   return this->eventManager;
 }
